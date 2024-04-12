@@ -1,0 +1,12 @@
+Metadata-Version: 2.1
+Name: textSummarizer
+Version: 0.0.1
+Summary: End-to-End Text Summarization
+Home-page: https://github.com/Aravindh5/Content-Summarizer-Project
+Author: Aravindh5
+Author-email: Ktaravindh005@gmail.com
+Project-URL: Bug Tracker, https://github.com/Aravindh5/Content-Summarizer-Project/issues
+License-File: LICENSE
+
+# Content Summarizer project
+In this project, I summarized the review of the audience and other details given by our users based on the business requirements.
