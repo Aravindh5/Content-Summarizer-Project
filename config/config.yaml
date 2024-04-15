@@ -1,0 +1,10 @@
+artifacts_root: artifacts
+
+# Based on the README.md file, this is the first step (1. Updating config.yaml).
+# At first, we have to add data ingestion related components (configurations).
+# Based on my project's requirements, I changed this configuration.
+data_ingestion:
+  root_dir: artifacts/data_ingestion
+  source_URL: https://github.com/entbappy/Branching-tutorial/raw/master/summarizer-data.zip
+  local_data_file: artifacts/data_ingestion/data.zip
+  unzip_dir: artifacts/data_ingestion
