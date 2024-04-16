@@ -4,6 +4,7 @@ from transformers import pipeline
 
 
 class PredictionPipeline:
+
     def __init__(self):
         self.config = ConfigurationManager().get_model_evaluation_config()
 

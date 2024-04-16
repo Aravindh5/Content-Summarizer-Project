@@ -1,0 +1,85 @@
+name: GCP Deployment Workflow
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  integration:
+    name: Continuous Integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Lint code
+        run: echo "Linting repository"
+
+      - name: Run unit tests
+        run: echo "Running unit tests"
+
+  build-and-push-gcr-image:
+    name: Continuous Delivery
+    needs: integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Utilities
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq unzip
+
+      - name: Configure gcloud SDK
+        uses: google-github-actions/setup-gcloud@v0.4
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Authenticate to GCR
+        run: |
+          gcloud auth configure-docker
+
+      - name: Build, tag, and push image to GCR
+        env:
+          GCR_REGISTRY: gcr.io/${{ secrets.GCP_PROJECT_ID }}
+          IMAGE_TAG: latest
+        run: |
+          docker build -t $GCR_REGISTRY/your-image-name:$IMAGE_TAG .
+          docker push $GCR_REGISTRY/your-image-name:$IMAGE_TAG
+          echo "::set-output name=image::$GCR_REGISTRY/your-image-name:$IMAGE_TAG"
+
+  continuous-deployment:
+    needs: build-and-push-gcr-image
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure gcloud SDK
+        uses: google-github-actions/setup-gcloud@v0.4
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Pull latest images from GCR
+        run: |
+          docker pull gcr.io/${{ secrets.GCP_PROJECT_ID }}/your-image-name:latest
+
+      # Additional steps for deploying the Docker image on GCP
+      - name: Run Docker Image to serve users
+        run: |
+          docker run -d -p 8080:8080 --name your-container-name gcr.io/${{ secrets.GCP_PROJECT_ID }}/your-image-name:latest
+
+      # Clean up previous images and containers if needed
+      - name: Clean previous images and containers
+        run: |
+          docker system prune -f
